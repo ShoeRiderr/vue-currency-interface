@@ -46,14 +46,10 @@ export default {
     login() {
       this.loading = true;
       this.$axios
-        .get(`${this.currencyInterfaceUrl}/sanctum/csrf-cookie`, {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        })
+        .get("/sanctum/csrf-cookie")
         .then(() => {
           this.$axios
-            .post(`${this.currencyInterfaceUrl}/login`, {
+            .post("/login", {
               name: this.name,
               password: this.password,
             })
@@ -78,7 +74,7 @@ export default {
 
     fetchUser() {
       this.$axios
-        .get(`${this.currencyInterfaceUrl}/user`)
+        .get(`/api/user`)
         .then((response) => {
           logIn();
           this.$store.dispatch(

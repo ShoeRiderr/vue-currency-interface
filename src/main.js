@@ -20,6 +20,7 @@ axios.defaults.headers.common = {
   "X-Requested-With": "XMLHttpRequest",
 };
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = process.env.VUE_APP_CURRENCY_INTERFACE_URL;
 
 Vue.prototype.$axios = axios;
 

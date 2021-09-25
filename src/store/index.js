@@ -10,7 +10,6 @@ export default new Vuex.Store({
     user: {
       id: null,
     },
-    currencyInterfaceUrl: process.env.VUE_APP_CURRENCY_INTERFACE_URL,
   },
   mutations: {
     setUser(state, payload) {
@@ -26,11 +25,7 @@ export default new Vuex.Store({
         try {
           const user =
             payload == undefined
-              ? (
-                  await this.$axios.get(
-                    `${context.state.currencyInterfaceUrl}/user`
-                  )
-                ).data.data
+              ? (await this.$axios.get("/api/user")).data.data
               : payload;
           context.commit("setUser", user);
           context.commit("setLoggedIn", true);
