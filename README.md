@@ -32,6 +32,7 @@ Then go to /etc/hosts and paste this:
  127.0.0.1  currency-interface.local 
 ```
 Next just follow steps from this tutorial: https://stevencotterill.com/snippets/vue-cli-using-a-custom-domain
+
 ### Compiles and hot-reloads for development
 ```
 npm run serve

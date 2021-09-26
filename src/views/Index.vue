@@ -23,7 +23,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(currency, index) in currencies" :key="index">
+          <tr v-for="(currency, index) in currencies.data" :key="index">
             <td>{{ currency.currency }}</td>
             <td>{{ currency.code }}</td>
             <td>{{ currency.mid || "-" }}</td>
@@ -48,6 +48,14 @@
           Dodaj do ulbionej listy
         </button>
       </div>
+      <pagination
+        class="p-4 mb-0 float-right"
+        :data="currencies"
+        @pagination-change-page="fetchCurrencies"
+      >
+        <span slot="prev-nav">&lt;</span>
+        <span slot="next-nav">&gt;</span>
+      </pagination>
     </div>
   </div>
 </template>
@@ -55,11 +63,18 @@
 <script>
 import { mapState } from "vuex";
 import actionType from "@/enums/actionType.js";
+import Pagination from "laravel-vue-pagination";
 
 export default {
+  components: {
+    Pagination,
+  },
+
   data() {
     return {
-      currencies: [],
+      currencies: {
+        data: [],
+      },
       checkedCurrencies: [],
       loading: false,
     };
@@ -71,7 +86,7 @@ export default {
     }),
 
     hasCurrencies() {
-      return this.currencies.length > 0;
+      return this.currencies.data.length > 0;
     },
   },
 
@@ -80,11 +95,11 @@ export default {
   },
 
   methods: {
-    fetchCurrencies() {
+    fetchCurrencies(page = 1) {
       this.$axios
-        .get("/api/bank")
+        .get("/api/bank?page=" + page)
         .then((response) => {
-          this.currencies = this.$lodash.get(response.data, "data", []);
+          this.currencies = this.$lodash.get(response, "data", {});
         })
         .catch(() => {
           this.$notify({
