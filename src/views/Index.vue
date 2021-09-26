@@ -10,11 +10,32 @@
         Aktualnie nie ma żadnych walut.
       </div>
 
-      <currency-table
-        v-else
-        @checked="getCurrencies"
-        :currencies="currencies"
-      ></currency-table>
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Waluta</th>
+            <th>Skrócona nazwa</th>
+            <th>Uśredniony kurs wymiany</th>
+            <th>Cena kupna</th>
+            <th>Cena sprzedaży</th>
+            <th>Data pobrania informacji</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(currency, index) in currencies" :key="index">
+            <td>{{ currency.currency }}</td>
+            <td>{{ currency.code }}</td>
+            <td>{{ currency.mid || "-" }}</td>
+            <td>{{ currency.ask || "-" }}</td>
+            <td>{{ currency.bid || "-" }}</td>
+            <td>{{ currency.updated_at }}</td>
+            <td>
+              <input type="checkbox" v-model="checkedCurrencies[currency.id]" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
       <div class="d-flex flex-row-reverse p-3">
         <button
@@ -34,13 +55,8 @@
 <script>
 import { mapState } from "vuex";
 import actionType from "@/enums/actionType.js";
-import CurrencyTable from "@/components/CurrencyTable";
 
 export default {
-  components: {
-    CurrencyTable,
-  },
-
   data() {
     return {
       currencies: [],
@@ -81,10 +97,19 @@ export default {
 
     onSubmit() {
       this.loading = true;
+      const chckedCurrencies = this.$lodash.mapValues(
+        this.checkedCurrencies,
+        (checkedCurrency, id) => {
+          if (checkedCurrency !== undefined) {
+            return id;
+          }
+        }
+      );
+
       this.$axios
         .post("/api/user/currency/action", {
           state: actionType.ADD_FAVOURITES,
-          currencies: this.checkedCurrencies,
+          currencies: chckedCurrencies,
         })
         .then(() => {
           this.$notify({

@@ -11,7 +11,7 @@
             <router-link
               v-if="isLoggedIn"
               class="nav-link"
-              :to="{ name: 'Currencies' }"
+              :to="{ name: 'User.Currencies' }"
             >
               Ulubione waluty
             </router-link>

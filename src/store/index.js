@@ -4,6 +4,13 @@ import { isLoggedIn, logOut } from "@/auth";
 
 Vue.use(Vuex);
 
+const axios = require("axios");
+axios.defaults.headers.common = {
+  "X-Requested-With": "XMLHttpRequest",
+};
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = process.env.VUE_APP_CURRENCY_INTERFACE_URL;
+
 export default new Vuex.Store({
   state: {
     isLoggedIn: false,
@@ -20,18 +27,23 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    async loadUser(context, payload) {
+    loadUser(context, payload) {
       if (isLoggedIn()) {
-        try {
-          const user =
-            payload == undefined
-              ? (await this.$axios.get("/api/user")).data.data
-              : payload;
-          context.commit("setUser", user);
-          context.commit("setLoggedIn", true);
-        } catch (error) {
-          context.dispatch("logout");
+        var user = {};
+        if (payload === undefined) {
+          axios
+            .get(`/api/user`)
+            .then((response) => {
+              user = response.data.data || {};
+            })
+            .catch(() => {
+              context.dispatch("logout");
+            });
+        } else {
+          user = payload;
         }
+        context.commit("setUser", user);
+        context.commit("setLoggedIn", true);
       }
     },
     setLoggedIn(context, payload) {

@@ -6,10 +6,32 @@
     <div v-else>
       <h2>Lista walut</h2>
 
-      <currency-table
-        @checked="getCurrencies"
-        :currencies="currencies"
-      ></currency-table>
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Waluta</th>
+            <th>Skrócona nazwa</th>
+            <th>Uśredniony kurs wymiany</th>
+            <th>Cena kupna</th>
+            <th>Cena sprzedaży</th>
+            <th>Data pobrania informacji</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(currency, index) in currencies" :key="index">
+            <td>{{ currency.currency }}</td>
+            <td>{{ currency.code }}</td>
+            <td>{{ currency.mid || "-" }}</td>
+            <td>{{ currency.ask || "-" }}</td>
+            <td>{{ currency.bid || "-" }}</td>
+            <td>{{ currency.updated_at }}</td>
+            <td>
+              <input type="checkbox" v-model="checkedCurrencies[currency.id]" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
       <div class="d-flex flex-row-reverse p-3">
         <button
@@ -29,13 +51,8 @@
 <script>
 import { mapState } from "vuex";
 import actionType from "@/enums/actionType.js";
-import CurrencyTable from "@/components/CurrencyTable";
 
 export default {
-  components: {
-    CurrencyTable,
-  },
-
   data() {
     return {
       currencies: [],
@@ -59,7 +76,7 @@ export default {
   },
 
   methods: {
-    fetchUCurrencies() {
+    fetchCurrencies() {
       this.$axios
         .get("/api/user/currency")
         .then((response) => {
@@ -76,18 +93,27 @@ export default {
 
     onSubmit() {
       this.loading = true;
+      const chckedCurrencies = this.$lodash.mapValues(
+        this.checkedCurrencies,
+        (checkedCurrency, id) => {
+          if (checkedCurrency !== undefined) {
+            return id;
+          }
+        }
+      );
+
       this.$axios
         .post("/api/user/currency/action", {
           state: actionType.REMOVE_FAVOURITES,
-          currencies: this.checkedCurrencies,
+          currencies: chckedCurrencies,
         })
-        .then(() => {
+        .then((response) => {
+          this.currencies = this.$lodash.get(response.data, "data", []);
           this.$notify({
             type: "success",
             title: "Sukces",
             text: "Pomyślnie usunięto waluty.",
           });
-          this.fetchCurrencies();
         })
         .catch(() => {
           this.$notify({
@@ -99,10 +125,6 @@ export default {
         .then(() => {
           this.loading = false;
         });
-    },
-
-    getCurrencies(values) {
-      this.checkedCurrencies = values;
     },
   },
 };
