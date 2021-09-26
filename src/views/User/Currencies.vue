@@ -1,17 +1,12 @@
 <template>
   <div>
-    <div v-if="!isLoggedIn" class="alert alert-info" role="alert">
-      <router-link :to="{ name: 'Login' }"> Zaloguj się </router-link>, żeby
-      rozpocząć
+    <div v-if="!hasCurrencies" class="alert alert-info" role="alert">
+      Brak ulubionych walut.
     </div>
     <div v-else>
       <h2>Lista walut</h2>
-      <div v-if="!hasCurrencies" class="alert alert-info" role="alert">
-        Aktualnie nie ma żadnych walut.
-      </div>
 
       <currency-table
-        v-else
         @checked="getCurrencies"
         :currencies="currencies"
       ></currency-table>
@@ -64,9 +59,9 @@ export default {
   },
 
   methods: {
-    fetchCurrencies() {
+    fetchUCurrencies() {
       this.$axios
-        .get("/api/bank")
+        .get("/api/user/currency")
         .then((response) => {
           this.currencies = this.$lodash.get(response.data, "data", []);
         })
@@ -83,14 +78,14 @@ export default {
       this.loading = true;
       this.$axios
         .post("/api/user/currency/action", {
-          state: actionType.ADD_FAVOURITES,
+          state: actionType.REMOVE_FAVOURITES,
           currencies: this.checkedCurrencies,
         })
         .then(() => {
           this.$notify({
             type: "success",
             title: "Sukces",
-            text: "Pomyślnie dodano waluty.",
+            text: "Pomyślnie usunięto waluty.",
           });
           this.fetchCurrencies();
         })
@@ -98,7 +93,7 @@ export default {
           this.$notify({
             type: "error",
             title: "Error",
-            text: "Coś poszło nie tak podczas dodawania walut.",
+            text: "Coś poszło nie tak podczas usuwania walut.",
           });
         })
         .then(() => {

@@ -14,6 +14,11 @@ const routes = [
     name: "Login",
     component: require("@/views/Login.vue").default,
   },
+  {
+    path: "/user/currencies",
+    name: "User.Currencies",
+    component: require("@/views/User/Currencies.vue").default,
+  },
 ];
 
 const router = new VueRouter({

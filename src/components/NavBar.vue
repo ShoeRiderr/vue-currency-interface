@@ -8,7 +8,11 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <router-link class="nav-link" :to="{ name: 'Currencies' }">
+            <router-link
+              v-if="isLoggedIn"
+              class="nav-link"
+              :to="{ name: 'Currencies' }"
+            >
               Ulubione waluty
             </router-link>
           </li>
@@ -35,7 +39,6 @@ export default {
   computed: {
     ...mapState({
       isLoggedIn: (state) => state.isLoggedIn,
-      currencyInterfaceUrl: (state) => state.currencyInterfaceUrl,
     }),
   },
 
