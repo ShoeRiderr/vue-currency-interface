@@ -32,7 +32,7 @@ Then go to /etc/hosts and paste this:
  127.0.0.1  currency-interface.local
  127.0.0.1  app.currency-interface.local
 ```
-Next in CurrencyInterface Laravel app in .env fila paste this:
+Next in CurrencyInterface Laravel app in .env file paste this:
 ```
 SESSION_DOMAIN=.currency-interface.local
 SANCTUM_STATEFUL_DOMAINS=app.currency-interface.local:8080
