@@ -38,7 +38,7 @@ SESSION_DOMAIN=.currency-interface.local
 SANCTUM_STATEFUL_DOMAINS=app.currency-interface.local:8080
 ```
 
-Now go to the next step, start the application.
+Now go to the next step and start the application.
 
 ### Compiles and hot-reloads for development
 ```
