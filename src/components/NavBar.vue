@@ -1,13 +1,17 @@
 <template>
   <div>
     <notifications position="top center" width="50%" />
-    <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-      <router-link class="navbar-brand" :to="{ name: 'Index' }">
-        Vue Currency Interface
-      </router-link>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
+    <b-container>
+      <b-navbar toggleable="lg" variant="faded" type="light">
+        <b-navbar-brand>
+          <router-link class="navbar-brand" :to="{ name: 'Index' }">
+            Vue Currency Interface
+          </router-link>
+        </b-navbar-brand>
+
+        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+        <b-collapse id="nav-collapse" is-nav>
+          <b-navbar-nav>
             <router-link
               v-if="isLoggedIn"
               class="nav-link"
@@ -15,20 +19,23 @@
             >
               Ulubione waluty
             </router-link>
-          </li>
-        </ul>
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item" v-if="!isLoggedIn">
-            <router-link class="nav-link" :to="{ name: 'Login' }">
+            <router-link
+              v-if="!isLoggedIn"
+              class="nav-link"
+              :to="{ name: 'Login' }"
+            >
               Zaloguj się
             </router-link>
-          </li>
-          <li class="nav-item" v-if="isLoggedIn">
-            <a class="nav-link" href="" @click.prevent="logOut">Wyloguj</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
+            <b-nav-item
+              v-if="isLoggedIn"
+              style="cursor: pointer"
+              @click.prevent="logOut"
+              >Wyloguj</b-nav-item
+            >
+          </b-navbar-nav>
+        </b-collapse>
+      </b-navbar>
+    </b-container>
   </div>
 </template>
 
@@ -47,10 +54,14 @@ export default {
       try {
         await this.$axios.post("logout");
         this.$store.dispatch("logout");
-        this.$router.push({ name: "Index" });
+        if (this.$route.name !== "Index") {
+          this.$router.push({ name: "Index" });
+        }
       } catch (error) {
         this.$store.dispatch("logout");
-        this.$router.push({ name: "Index" });
+        if (this.$route.name !== "Index") {
+          this.$router.push({ name: "Index" });
+        }
       }
     },
   },

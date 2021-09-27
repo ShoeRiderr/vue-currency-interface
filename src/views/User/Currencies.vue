@@ -1,49 +1,25 @@
 <template>
   <div>
-    <div v-if="!hasCurrencies" class="alert alert-info" role="alert">
+    <b-alert :show="!hasCurrencies" variant="primary">
       Brak ulubionych walut.
-    </div>
-    <div v-else>
-      <h2>Lista walut</h2>
+    </b-alert>
+    <div v-if="hasCurrencies">
+      <h2>Lista ulubionych walut</h2>
 
-      <table class="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>Waluta</th>
-            <th>Skrócona nazwa</th>
-            <th>Uśredniony kurs wymiany</th>
-            <th>Cena kupna</th>
-            <th>Cena sprzedaży</th>
-            <th>Data pobrania informacji</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(currency, index) in currencies.data" :key="index">
-            <td>{{ currency.currency }}</td>
-            <td>{{ currency.code }}</td>
-            <td>{{ currency.mid || "-" }}</td>
-            <td>{{ currency.ask || "-" }}</td>
-            <td>{{ currency.bid || "-" }}</td>
-            <td>{{ currency.updated_at }}</td>
-            <td>
-              <input type="checkbox" v-model="checkedCurrencies[currency.id]" />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <currency-table v-model="checkedCurrencies" />
 
       <div class="d-flex flex-row-reverse p-3">
-        <button
-          type="button"
+        <b-button
+          type="submit"
           :disabled="loading"
           @click.prevent="onSubmit"
           form="currency-form"
-          class="btn btn-outline-primary"
+          variant="outline-danger"
         >
-          Dodaj do ulbionej listy
-        </button>
+          Usuń z ulbionej listy
+        </b-button>
       </div>
+
       <pagination
         class="p-4 mb-0 float-right"
         :data="currencies"
@@ -60,17 +36,16 @@
 import { mapState } from "vuex";
 import actionType from "@/enums/actionType.js";
 import Pagination from "laravel-vue-pagination";
+import CurrencyTable from "@/components/CurrencyTable";
 
 export default {
   components: {
     Pagination,
+    CurrencyTable,
   },
 
   data() {
     return {
-      currencies: {
-        data: [],
-      },
       checkedCurrencies: [],
       loading: false,
     };
@@ -79,6 +54,7 @@ export default {
   computed: {
     ...mapState({
       isLoggedIn: (state) => state.isLoggedIn,
+      currencies: (state) => state.currencies,
     }),
 
     hasCurrencies() {
@@ -87,7 +63,9 @@ export default {
   },
 
   mounted() {
-    this.fetchCurrencies();
+    if (this.isLoggedIn) {
+      this.fetchCurrencies();
+    }
   },
 
   methods: {
@@ -95,7 +73,10 @@ export default {
       this.$axios
         .get("/api/user/currency?page=" + page)
         .then((response) => {
-          this.currencies = this.$lodash.get(response, "data", {});
+          this.$store.commit(
+            "setCurrencies",
+            this.$lodash.get(response, "data", {})
+          );
         })
         .catch(() => {
           this.$notify({
@@ -108,7 +89,7 @@ export default {
 
     onSubmit() {
       this.loading = true;
-      const chckedCurrencies = this.$lodash.mapValues(
+      const checkedCurrencies = this.$lodash.mapValues(
         this.checkedCurrencies,
         (checkedCurrency, id) => {
           if (checkedCurrency !== undefined) {
@@ -120,7 +101,7 @@ export default {
       this.$axios
         .post("/api/user/currency/action", {
           state: actionType.REMOVE_FAVOURITES,
-          currencies: chckedCurrencies,
+          currencies: checkedCurrencies,
         })
         .then(() => {
           this.$notify({

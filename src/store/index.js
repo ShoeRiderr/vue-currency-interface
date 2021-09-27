@@ -11,16 +11,24 @@ axios.defaults.headers.common = {
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.VUE_APP_CURRENCY_INTERFACE_URL;
 
+window.lodash = require("lodash");
+
 export default new Vuex.Store({
   state: {
     isLoggedIn: false,
     user: {
       id: null,
     },
+    currencies: {
+      data: [],
+    },
   },
   mutations: {
     setUser(state, payload) {
       state.user = payload;
+    },
+    setCurrencies(state, payload) {
+      state.currencies = payload;
     },
     setLoggedIn(state, payload) {
       state.isLoggedIn = payload;
@@ -52,6 +60,7 @@ export default new Vuex.Store({
     },
     logout({ commit }) {
       commit("setUser", {});
+      commit("setCurrencies", {});
       commit("setLoggedIn", false);
       logOut();
     },

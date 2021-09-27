@@ -1,53 +1,30 @@
 <template>
   <div>
-    <div v-if="!isLoggedIn" class="alert alert-info" role="alert">
+    <b-alert :show="!isLoggedIn" variant="primary">
       <router-link :to="{ name: 'Login' }"> Zaloguj się </router-link>, żeby
       rozpocząć
-    </div>
-    <div v-else>
-      <h2>Lista walut</h2>
-      <div v-if="!hasCurrencies" class="alert alert-info" role="alert">
-        Aktualnie nie ma żadnych walut.
-      </div>
+    </b-alert>
 
-      <table class="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>Waluta</th>
-            <th>Skrócona nazwa</th>
-            <th>Uśredniony kurs wymiany</th>
-            <th>Cena kupna</th>
-            <th>Cena sprzedaży</th>
-            <th>Data pobrania informacji</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(currency, index) in currencies.data" :key="index">
-            <td>{{ currency.currency }}</td>
-            <td>{{ currency.code }}</td>
-            <td>{{ currency.mid || "-" }}</td>
-            <td>{{ currency.ask || "-" }}</td>
-            <td>{{ currency.bid || "-" }}</td>
-            <td>{{ currency.updated_at }}</td>
-            <td>
-              <input type="checkbox" v-model="checkedCurrencies[currency.id]" />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-if="isLoggedIn">
+      <h2>Lista walut</h2>
+      <b-alert :show="!hasCurrencies" variant="primary">
+        Aktualnie nie ma żadnych walut.
+      </b-alert>
+
+      <currency-table v-model="checkedCurrencies" />
 
       <div class="d-flex flex-row-reverse p-3">
-        <button
-          type="button"
+        <b-button
+          type="submit"
           :disabled="loading"
           @click.prevent="onSubmit"
           form="currency-form"
-          class="btn btn-outline-primary"
+          variant="outline-primary"
         >
           Dodaj do ulbionej listy
-        </button>
+        </b-button>
       </div>
+
       <pagination
         class="p-4 mb-0 float-right"
         :data="currencies"
@@ -64,17 +41,16 @@
 import { mapState } from "vuex";
 import actionType from "@/enums/actionType.js";
 import Pagination from "laravel-vue-pagination";
+import CurrencyTable from "@/components/CurrencyTable";
 
 export default {
   components: {
     Pagination,
+    CurrencyTable,
   },
 
   data() {
     return {
-      currencies: {
-        data: [],
-      },
       checkedCurrencies: [],
       loading: false,
     };
@@ -83,6 +59,7 @@ export default {
   computed: {
     ...mapState({
       isLoggedIn: (state) => state.isLoggedIn,
+      currencies: (state) => state.currencies,
     }),
 
     hasCurrencies() {
@@ -91,7 +68,9 @@ export default {
   },
 
   mounted() {
-    this.fetchCurrencies();
+    if (this.isLoggedIn) {
+      this.fetchCurrencies();
+    }
   },
 
   methods: {
@@ -99,7 +78,10 @@ export default {
       this.$axios
         .get("/api/bank?page=" + page)
         .then((response) => {
-          this.currencies = this.$lodash.get(response, "data", {});
+          this.$store.commit(
+            "setCurrencies",
+            this.$lodash.get(response, "data", {})
+          );
         })
         .catch(() => {
           this.$notify({
@@ -112,7 +94,7 @@ export default {
 
     onSubmit() {
       this.loading = true;
-      const chckedCurrencies = this.$lodash.mapValues(
+      const checkedCurrencies = this.$lodash.mapValues(
         this.checkedCurrencies,
         (checkedCurrency, id) => {
           if (checkedCurrency !== undefined) {
@@ -124,7 +106,7 @@ export default {
       this.$axios
         .post("/api/user/currency/action", {
           state: actionType.ADD_FAVOURITES,
-          currencies: chckedCurrencies,
+          currencies: checkedCurrencies,
         })
         .then(() => {
           this.$notify({
